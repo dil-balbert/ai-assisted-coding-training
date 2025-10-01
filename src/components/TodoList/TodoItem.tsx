@@ -1,5 +1,14 @@
 import React from 'react';
-import { ListItem, ListItemText, IconButton, Checkbox, Divider, Typography } from '@mui/material';
+import {
+  ListItem,
+  ListItemText,
+  IconButton,
+  Checkbox,
+  Divider,
+  Typography,
+  Chip,
+} from '@mui/material';
+import { format } from 'date-fns';
 import type { Todo } from '../../types/Todo';
 import { useTodo } from '../../hooks/useTodo';
 
@@ -10,6 +19,11 @@ interface TodoItemProps {
 
 export const TodoItem: React.FC<TodoItemProps> = ({ todo, onEditClick }) => {
   const { toggleTodoCompletion, deleteTodo } = useTodo();
+
+  const isOverdue =
+    todo.dueDate &&
+    !todo.completed &&
+    new Date(todo.dueDate) < new Date(new Date().setHours(0, 0, 0, 0));
 
   return (
     <>
@@ -62,15 +76,45 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, onEditClick }) => {
             </Typography>
           }
           secondary={
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'text.secondary',
-                textDecoration: todo.completed ? 'line-through' : 'none',
-              }}
-            >
-              {todo.description}
-            </Typography>
+            <>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  textDecoration: todo.completed ? 'line-through' : 'none',
+                }}
+              >
+                {todo.description}
+              </Typography>
+              {todo.dueDate && (
+                <div
+                  style={{
+                    marginTop: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    component="span"
+                    sx={{
+                      color: 'text.secondary',
+                    }}
+                  >
+                    Due: {format(new Date(todo.dueDate), 'PP')}
+                  </Typography>
+                  {isOverdue && (
+                    <Chip
+                      label="Overdue"
+                      size="small"
+                      color="error"
+                      sx={{ height: 20, fontSize: '0.75rem' }}
+                    />
+                  )}
+                </div>
+              )}
+            </>
           }
         />
       </ListItem>
