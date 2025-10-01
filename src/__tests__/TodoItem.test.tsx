@@ -100,4 +100,72 @@ describe('TodoItem Component', () => {
 
     expect(mockOnEditClick).toHaveBeenCalledWith(mockTodo);
   });
+
+  it('displays formatted due date when present', () => {
+    const todoWithDueDate: Todo = {
+      ...mockTodo,
+      dueDate: '2025-12-31T00:00:00.000Z',
+    };
+
+    render(<TodoItem todo={todoWithDueDate} onEditClick={mockOnEditClick} />);
+
+    // Check that the formatted due date is displayed (PP format: Dec 31, 2025)
+    expect(screen.getByText(/Due:/)).toBeInTheDocument();
+    expect(screen.getByText(/Dec 31, 2025/)).toBeInTheDocument();
+  });
+
+  it('does not display due date when not present', () => {
+    render(<TodoItem todo={mockTodo} onEditClick={mockOnEditClick} />);
+
+    // Check that "Due:" is not in the document
+    expect(screen.queryByText(/Due:/)).not.toBeInTheDocument();
+  });
+
+  it('displays overdue indicator for past due incomplete todos', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const overdueTodo: Todo = {
+      ...mockTodo,
+      completed: false,
+      dueDate: yesterday.toISOString(),
+    };
+
+    render(<TodoItem todo={overdueTodo} onEditClick={mockOnEditClick} />);
+
+    // Check that the overdue chip is displayed
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
+  });
+
+  it('does not display overdue indicator for completed todos', () => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const completedOverdueTodo: Todo = {
+      ...mockTodo,
+      completed: true,
+      dueDate: yesterday.toISOString(),
+    };
+
+    render(<TodoItem todo={completedOverdueTodo} onEditClick={mockOnEditClick} />);
+
+    // Overdue indicator should not be present
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
+
+  it('does not display overdue indicator for future due dates', () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const futureTodo: Todo = {
+      ...mockTodo,
+      completed: false,
+      dueDate: tomorrow.toISOString(),
+    };
+
+    render(<TodoItem todo={futureTodo} onEditClick={mockOnEditClick} />);
+
+    // Overdue indicator should not be present
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+  });
 });
